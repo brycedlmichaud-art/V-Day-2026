@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Valentine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+
+   <style>
+        body {
+            background-color: #050505;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        /* --- GENERAL SCENE LOGIC --- */
+        .scene {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none; 
+            transition: opacity 1.5s ease;
+            width: 100%;
+            height: 100%; /* Take full height to center vertically */
+        }
+
+        .active-scene {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Text Styling */
+        .script-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #ffdae0;
+            /* Glowing text effect */
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
+            text-align: center;
+            margin-top: 40px;
+            min-height: 80px;
+            z-index: 10;
+        }
+
+        .letter {
+            opacity: 0;
+            transition: opacity 1s ease;
+            display: inline-block;
+        }
+        .letter.visible { opacity: 1; }
+
+        /* --- SCENE 1 RAINBOW TEXT --- */
+        @keyframes love-cycle {
+            0% { color: #ff0000; text-shadow: 0 0 15px #ff0000; } /* Red */
+            25% { color: #ff1493; text-shadow: 0 0 15px #ff1493; } /* Deep Pink */
+            50% { color: #9400d3; text-shadow: 0 0 15px #9400d3; } /* Purple */
+            75% { color: #ff69b4; text-shadow: 0 0 15px #ff69b4; } /* Hot Pink */
+            100% { color: #ff0000; text-shadow: 0 0 15px #ff0000; } /* Red */
+        }
+
+        #text-1.active-cycle .letter {
+            animation: love-cycle 1.5s linear infinite;
+        }
+        /* General class for individual letters */
+        .letter.rainbow-text {
+            animation: love-cycle 1.5s linear infinite;
+        }
+        /* Randomize timing for chaotic effect */
+        #text-1 .letter:nth-child(2n) { animation-duration: 1.2s; }
+        #text-1 .letter:nth-child(3n) { animation-duration: 1.8s; }
+        #text-1 .letter:nth-child(5n) { animation-delay: -0.5s; }
+
+        /* --- SCENE 2: THE CUTOUT --- */
+        #img-cutout {
+            /* Match Gallery Look from Scene 3 */
+            width: 300px;
+            height: 400px;
+            object-fit: cover;
+            border: 12px solid #ffffff;
+            background-color: white;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+            transition: transform 0.5s ease;
+        }
+        
+        #img-cutout:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            border-color: #fff0f5;
+        }
+
+        /* --- SCENE 3: THE GALLERY ROW --- */
+        .image-row {
+            display: flex;
+            gap: 40px; /* Space between frames */
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .gallery-img {
+            width: 300px;  /* Fixed width */
+            height: 400px; /* Fixed height for uniformity */
+            object-fit: cover; /* Crops image cleanly if aspect ratio differs */
+            
+            /* THE GALLERY FRAME STYLE */
+            border: 12px solid #ffffff; /* Thick white matte */
+            background-color: white; 
+            
+            /* The "Rim Light" - subtle white glow to separate from black bg */
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1); 
+
+            opacity: 0; 
+            transform: translateY(30px);
+            transition: all 1s ease, transform 0.3s ease; /* Smooth hover */
+        }
+
+        /* Hover Effect for Gallery Images */
+        .gallery-img:hover {
+            transform: scale(1.05) translateY(0) !important; /* Slight zoom */
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3); /* Brighter glow */
+            border-color: #fff0f5; /* Slightly pinkish white border on hover */
+            z-index: 5;
+        }
+
+        /* Animation class to show them */
+        .gallery-img.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* --- SCENE 4 STYLES --- */
+        .scatter-item {
+            position: absolute;
+            opacity: 0; /* Hidden initially */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 1s ease, transform 0.5s ease;
+            width: 250px; /* Smaller than the main ones */
+        }
+
+        .scatter-item:hover {
+            transform: scale(1.1) !important; /* Pop up on hover */
+            z-index: 20;
+        }
+
+        .polaroid-img {
+            width: 100%;
+            height: auto;
+            border: 10px solid white;
+            border-bottom: 30px solid white; /* Thicker bottom like a real Polaroid */
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); /* Darker shadow for depth */
+        }
+
+        /* Smaller text for the captions */
+        .caption-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #ffdae0;
+            text-shadow: 0 0 5px rgba(255, 182, 193, 0.6);
+            margin-top: 10px;
+            text-align: center;
+            min-height: 40px;
+        }
+        /* --- SCENE 5: HEART ANIMATION --- */
+        .heart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 800px; /* Adjust based on how big you want the heart */
+            height: 600px;
+            position: relative;
+        }
+
+        .half-wrapper {
+            width: 50%; /* Each side takes up exactly half */
+            height: 100%;
+            overflow: hidden; /* Hides the other half of the image */
+            position: relative;
+            transition: transform 1.5s cubic-bezier(0.17, 0.67, 0.23, 1.4); /* Bouncy collision */
+        }
+
+        /* Initial State: Pushed off screen */
+        .left-side { transform: translateX(-100vw); }
+        .right-side { transform: translateX(100vw); }
+
+        /* The Animation Class (brings them to center) */
+        .unite { transform: translateX(0) !important; }
+
+        .split-img {
+            height: 100%;
+            width: 200%; /* Image is double the width of the wrapper */
+            object-fit: contain;
+            position: absolute;
+            /* Optional: Add a glow to make it look more like a sticker */
+            filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.6));
+        }
+
+        /* Shift the image inside the wrappers to show correct half */
+        .left-side .split-img { left: 0; }
+        .right-side .split-img { right: 0; }
+
+        .date-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ffdae0;
+            text-shadow: 0 0 8px rgba(255, 182, 193, 0.8);
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 15;
+        }
+
+        /* --- SCENE 5 BUTTONS --- */
+        .decision-container {
+            display: flex;
+            gap: 60px;
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 20;
+        }
+
+        .decision-btn {
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .decision-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #ffdae0;
+            stroke-width: 20;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        /* No Button: Greys out */
+        .no-btn:hover svg {
+            stroke: #555;
+            filter: grayscale(100%);
+        }
+
+        /* Yes Button: Lights up like Scene 1 */
+        .yes-btn:hover svg {
+            animation: pulseNeon 1.5s infinite alternate;
+        }
+
+        /* --- NEON HEART (SCENE 1) --- */
+        .neon-heart-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-width: 90vw;
+            height: auto;
+            z-index: 5; /* Behind text (z-index 10) */
+            pointer-events: none;
+            opacity: 0; /* Hidden initially */
+            transition: opacity 0.5s ease;
+        }
+
+        #neon-heart-path {
+            fill: none;
+            stroke: #ff69b4; /* Hot Pink */
+            stroke-width: 15;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493);
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000; /* Start hidden */
+        }
+
+        .draw-heart {
+            animation: drawLine 2.5s ease-out forwards, pulseNeon 4s infinite alternate 2.5s;
+        }
+
+        @keyframes drawLine {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes pulseNeon {
+            0% { stroke: #ff69b4; filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493); }
+            50% { stroke: #ff0000; filter: drop-shadow(0 0 15px #ff0000) drop-shadow(0 0 30px #8b0000); }
+            100% { stroke: #9400d3; filter: drop-shadow(0 0 10px #9400d3) drop-shadow(0 0 20px #4b0082); }
+        }
+
+        /* --- TV STATIC ENDING --- */
+        .tv-static {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            background: #000;
+            transition: opacity 3s ease; /* Slow fade to black */
+        }
+
+        .tv-static.active {
+            opacity: 1;
+        }
+
+        .tv-static.active::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-radial-gradient(#000 0 0.0001%, #333 0 0.0002%) 50% 0/2500px 2500px,
+                        repeating-conic-gradient(#000 0 0.0001%, #333 0 0.0002%) 60% 60%/2500px 2500px;
+            background-blend-mode: difference;
+            animation: static-noise 0.2s infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes static-noise {
+            0% { transform: translate(0,0); }
+            10% { transform: translate(-5%,-5%); }
+            20% { transform: translate(-10%,5%); }
+            30% { transform: translate(5%,-10%); }
+            40% { transform: translate(-5%,15%); }
+            50% { transform: translate(-10%,5%); }
+            60% { transform: translate(15%,0); }
+            70% { transform: translate(0,10%); }
+            80% { transform: translate(-15%,0); }
+            90% { transform: translate(10%,5%); }
+            100% { transform: translate(5%,0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="scene-1" class="scene active-scene">
+        <div class="neon-heart-container">
+            <svg viewBox="0 0 512 512" style="width: 100%; height: 100%; overflow: visible;">
+                <!-- Standard Heart Path -->
+                <path id="neon-heart-path" d="M256,472.3l-26.9-24.5C133.5,361.2,69.3,303.1,69.3,231.8c0-58.7,46.1-104.8,104.8-104.8c32.3,0,63.3,15.1,81.9,38.9c18.6-23.8,49.6-38.9,81.9-38.9c58.7,0,104.8,46.1,104.8,104.8c0,71.3-64.2,129.4-159.8,216L256,472.3z" />
+            </svg>
+        </div>
+        <div class="script-text" id="text-1">Will you be mine?</div>
+    </div>
+
+    <div id="scene-2" class="scene">
+        <img src="tofino.png" id="img-cutout" alt="Us">
+        <div class="script-text" id="text-2"></div>
+    </div>
+
+    <div id="scene-3" class="scene">
+        <div class="image-row">
+            <img src="us-5.png" class="gallery-img" alt="Memory 1">
+            <img src="us-8.png" class="gallery-img" alt="Memory 2">
+            <img src="us-7.png" class="gallery-img" alt="Memory 3">
+        </div>
+        <div class="script-text" id="text-3"></div>
+    </div>
+    <div id="scene-4" class="scene">
+        
+        <div class="scatter-item" id="item-1" style="top: 10%; left: 10%; transform: rotate(-6deg);">
+            <img src="us-3.png" class="polaroid-img" alt="Slime">
+            <div class="caption-text" id="text-4-1"></div>
+        </div>
+
+        <div class="scatter-item" id="item-2" style="top: 15%; right: 10%; transform: rotate(4deg);">
+            <img src="us-9.png" class="polaroid-img" alt="Evil Twin">
+            <div class="caption-text" id="text-4-2"></div>
+        </div>
+
+        <div class="scatter-item" id="item-3" style="bottom: 10%; left: 15%; transform: rotate(3deg);">
+            <img src="us-1.png" class="polaroid-img" alt="Slampiece">
+            <div class="caption-text" id="text-4-3"></div>
+        </div>
+
+        <div class="scatter-item" id="item-4" style="bottom: 15%; right: 10%; transform: rotate(-5deg);">
+            <img src="us-6.png" class="polaroid-img" alt="Soulmate">
+            <div class="caption-text" id="text-4-4"></div>
+        </div>
+    </div>
+
+    <div id="scene-5" class="scene">
+        
+        <div class="heart-container">
+            <div class="half-wrapper left-side">
+                <img src="heart-sticker.png" class="split-img" alt="Left Half">
+            </div>
+            
+            <div class="half-wrapper right-side">
+                <img src="heart-sticker.png" class="split-img" alt="Right Half">
+            </div>
+            <div class="date-text" id="date-text">Feb. 14</div>
+        </div>
+
+        <div class="script-text" id="text-5" style="margin-top: 50px;"></div>
+
+        <div class="decision-container" id="decision-buttons">
+            <!-- Broken Heart (No) -->
+            <button class="decision-btn no-btn" title="No">
+                <svg viewBox="0 0 512 512">
+                    <!-- Added fill="#050505" so the crack line (which is black) actually obscures the pink outline -->
+                    <path d="M256,472.3l-26.9-24.5C133.5,361.2,69.3,303.1,69.3,231.8c0-58.7,46.1-104.8,104.8-104.8c32.3,0,63.3,15.1,81.9,38.9c18.6-23.8,49.6-38.9,81.9-38.9c58.7,0,104.8,46.1,104.8,104.8c0,71.3-64.2,129.4-159.8,216L256,472.3z" style="fill: #050505;" />
+                    <path d="M256,120 L230,200 L270,260 L240,340 L256,472" style="stroke: #050505; stroke-width: 20;" />
+                </svg>
+            </button>
+            <!-- Heart (Yes) -->
+            <button class="decision-btn yes-btn" id="yes-btn" title="Yes">
+                <svg viewBox="0 0 512 512">
+                    <path d="M256,472.3l-26.9-24.5C133.5,361.2,69.3,303.1,69.3,231.8c0-58.7,46.1-104.8,104.8-104.8c32.3,0,63.3,15.1,81.9,38.9c18.6-23.8,49.6-38.9,81.9-38.9c58.7,0,104.8,46.1,104.8,104.8c0,71.3-64.2,129.4-159.8,216L256,472.3z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Static Overlay -->
+    <div class="tv-static"></div>
+
+    <script>
+        let currentStep = 1;
+        let isAnimating = false;
+
+        // Function to animate text letter by letter
+        function typeWriter(text, elementId, delay = 0) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = ''; // Clear existing
+            
+            // Create spans
+            text.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char; 
+                span.classList.add('letter');
+                container.appendChild(span);
+            });
+
+            // Animate spans
+            setTimeout(() => {
+                const letters = container.querySelectorAll('.letter');
+                letters.forEach((letter, index) => {
+                    setTimeout(() => {
+                        letter.classList.add('visible');
+                    }, index * 100); // Speed of typing
+                });
+            }, delay);
+        }
+
+        // Function to reveal scatter items in Scene 4
+        function revealItem(itemId, textId, text, delay) {
+            setTimeout(() => {
+                const item = document.getElementById(itemId);
+                if (item) {
+                    item.style.opacity = '1';
+                    typeWriter(text, textId, 500); 
+                }
+            }, delay);
+        }
+
+        // --- STEP 1: AUTO START ---
+        // Animate the first text automatically on load
+        window.onload = () => {
+            typeWriter("Mrs. Hailey Michaud...", "text-1", 1000);
+            
+            // Trigger Neon Heart after text finishes (approx 3.5s total)
+            setTimeout(() => {
+                const heartContainer = document.querySelector('.neon-heart-container');
+                const heartPath = document.getElementById('neon-heart-path');
+                if (heartContainer && heartPath) {
+                    heartContainer.style.opacity = '1';
+                    heartPath.classList.add('draw-heart');
+                }
+            }, 3500);
+
+            // Trigger Text Color Cycle after heart finishes drawing (3.5s start + 2.5s draw = 6s)
+            setTimeout(() => {
+                const text1 = document.getElementById('text-1');
+                if (text1) {
+                    text1.classList.add('active-cycle');
+                }
+            }, 6000);
+        };
+
+        // --- CLICK HANDLER ---
+        document.body.addEventListener('click', () => {
+            if (isAnimating) return; // Prevent double clicks during transitions
+
+            if (currentStep === 1) {
+                // TRANSITION TO SCENE 2
+                isAnimating = true;
+                
+                // Fade out Scene 1
+                document.getElementById('scene-1').classList.remove('active-scene');
+
+                setTimeout(() => {
+                    // Show Scene 2
+                    document.getElementById('scene-2').classList.add('active-scene');
+                    
+                    // Start Typing Text 2
+                    typeWriter("There is no other love like this one.", "text-2", 500);
+                    
+                    isAnimating = false;
+                    currentStep = 2;
+                }, 1500);
+            } 
+            else if (currentStep === 2) {
+                // TRANSITION TO SCENE 3
+                isAnimating = true;
+
+                // Fade out Scene 2
+                document.getElementById('scene-2').classList.remove('active-scene');
+
+                setTimeout(() => {
+                    // Show Scene 3
+                    document.getElementById('scene-3').classList.add('active-scene');
+                    
+                    // Fade in the 3 images one by one
+                    const images = document.querySelectorAll('.gallery-img');
+                    images.forEach((img, idx) => {
+                        setTimeout(() => {
+                            img.classList.add('show');
+                        }, idx * 400); // Cascade effect
+                    });
+
+                    // Start Typing Text 3 (wait for images to start appearing)
+                    typeWriter("There is no comparison to you.", "text-3", 1500);
+
+                    isAnimating = false;
+                    currentStep = 3;
+                }, 1500);
+            }
+            else if (currentStep === 3) {
+                // TRANSITION TO SCENE 4
+                isAnimating = true;
+                
+                // Fade out Scene 3
+                document.getElementById('scene-3').classList.remove('active-scene');
+
+                setTimeout(() => {
+                    document.getElementById('scene-4').classList.add('active-scene');
+
+                    // --- SEQUENTIAL REVEAL ---
+                    
+                    // 1. Slime (Immediate)
+                    revealItem('item-1', 'text-4-1', "You are my mf slime.", 0);
+
+                    // 2. Evil Twin (Wait 2.5s)
+                    revealItem('item-2', 'text-4-2', "My evil twin.", 2500);
+
+                    // 3. Slampiece (Wait 5s)
+                    revealItem('item-3', 'text-4-3', "My slampiece.", 5000);
+
+                    // 4. Soulmate (Wait 7.5s)
+                    revealItem('item-4', 'text-4-4', "You are my soulmate.", 7500);
+
+                    currentStep = 4;
+                    isAnimating = false;
+                }, 1500);
+            }
+            else if (currentStep === 4) {
+                // TRANSITION TO SCENE 5 (FINAL)
+                isAnimating = true;
+
+                // Fade out Scene 4 (Scattered photos)
+                document.getElementById('scene-4').classList.remove('active-scene');
+
+                setTimeout(() => {
+                    document.getElementById('scene-5').classList.add('active-scene');
+                    
+                    // Trigger the "Unite" animation
+                    setTimeout(() => {
+                        document.querySelector('.left-side').classList.add('unite');
+                        document.querySelector('.right-side').classList.add('unite');
+                    }, 100);
+
+                    // Reveal Date Text
+                    setTimeout(() => {
+                        document.getElementById('date-text').style.opacity = '1';
+                    }, 1200);
+
+                    // Final Text
+                    setTimeout(() => {
+                        const finalText = "Will you be my Valentine?";
+                        typeWriter(finalText, "text-5", 0);
+
+                        // After typing finishes (length * 100ms), apply effects
+                        setTimeout(() => {
+                            // 1. Apply rainbow effect to "Valentine"
+                            // "Valentine?" is the last 10 chars.
+                            const letters = document.querySelectorAll('#text-5 .letter');
+                            const startIndex = letters.length - 10; // Start at 'V'
+                            
+                            letters.forEach((letter, index) => {
+                                if (index >= startIndex) {
+                                    letter.classList.add('rainbow-text');
+                                }
+                            });
+
+                            // 2. Reveal Buttons
+                            document.getElementById('decision-buttons').style.opacity = '1';
+
+                        }, finalText.length * 100 + 500);
+                    }, 1500); // Wait for heart to form
+
+                    currentStep = 5; // Prevent re-triggering
+                }, 1000);
+            }
+        });
+
+        // Yes Button Click
+        document.getElementById('yes-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent scene transition logic
+            typeWriter("Good girl.❤️", "text-5", 0);
+
+            // Trigger Static Fade Out after 2 seconds
+            setTimeout(() => {
+                const staticScreen = document.querySelector('.tv-static');
+                if (staticScreen) {
+                    staticScreen.classList.add('active');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
